@@ -10,6 +10,7 @@ import { envSchema, type Env } from './config/env.schema.js';
 // import { DatabaseModule } from './database/database.module.js';    // Fase 10
 // import { ProductsModule } from './products/products.module.js';    // Fase 8
 import { UsersModule } from './modules/users/users.module.js';             // Fase 7
+import { WorkshopsModule } from './modules/workshops/workshops.module.js';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module.js';             // Fa
         }),
         UsersModule,     // Fase 7
         AuthModule,      // Fase 7
+        WorkshopsModule,
         // ProductsModule,  // Fase 8
         // DatabaseModule,  // Fase 10
     ],
