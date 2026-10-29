@@ -18,6 +18,12 @@ export const envSchema = z.object({
   JWT_EXPIRES_IN: z.coerce.number().default(3600),
   ADMIN_EMAIL: z.email(),
   ADMIN_PASSWORD: z.string().min(8),
+  // Claves de integraciones externas, separadas por coma en el .env.
+  // Aqui las convierto en un array para que el ApiKeyGuard solo tenga que buscar dentro.
+  API_KEYS: z
+    .string()
+    .min(1)
+    .transform((valor) => valor.split(",").map((clave) => clave.trim()).filter(Boolean)),
 });
 
 export type Env = z.infer<typeof envSchema>;

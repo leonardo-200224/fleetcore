@@ -1,6 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+    IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength,
+} from 'class-validator';
+import { Role } from '../../../common/enums/role.enum.js';
 
 const toLowerTrim = ({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim().toLowerCase() : value;
@@ -24,6 +27,13 @@ export class RegisterDto {
         message: 'La contraseña necesita al menos una mayúscula y un número',
     })
     password: string;
+
+    // El enunciado pide registrar usuarios con rol ADMIN o TECHNICIAN.
+    // Es opcional: si no llega, la entidad lo deja en TECHNICIAN.
+    @ApiPropertyOptional({ enum: Role, example: Role.TECHNICIAN })
+    @IsOptional()
+    @IsEnum(Role, { message: 'El rol debe ser ADMIN o TECHNICIAN' })
+    role?: Role;
 }
 
 export class LoginDto {
