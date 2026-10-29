@@ -10,6 +10,7 @@ import { envSchema, type Env } from './config/env.schema.js';
 // import { DatabaseModule } from './database/database.module.js';    // Fase 10
 // import { ProductsModule } from './products/products.module.js';    // Fase 8
 import { UsersModule } from './modules/users/users.module.js';             // Fase 7
+import { MechanicsModule } from './modules/mechanics/mechanics.module.js';
 import { WorkshopsModule } from './modules/workshops/workshops.module.js';
 
 @Module({
@@ -35,6 +36,7 @@ import { WorkshopsModule } from './modules/workshops/workshops.module.js';
         UsersModule,     // Fase 7
         AuthModule,      // Fase 7
         WorkshopsModule,
+        MechanicsModule,
         // ProductsModule,  // Fase 8
         // DatabaseModule,  // Fase 10
     ],
