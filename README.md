@@ -4,7 +4,7 @@ API REST para gestionar el mantenimiento de la flota de vehiculos de la empresa
 de transporte FleetCore. Prueba de desempeno del modulo 6.2 de NestJS.
 
 **Coder:** Leonardo Ayala
-**Clan:** PENDIENTE_CLAN
+**Clan:** Node.js noche
 
 Hecha con NestJS, TypeScript, TypeORM, PostgreSQL y JWT.
 
