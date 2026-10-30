@@ -10,6 +10,7 @@ import { envSchema, type Env } from './config/env.schema.js';
 // import { DatabaseModule } from './database/database.module.js';    // Fase 10
 // import { ProductsModule } from './products/products.module.js';    // Fase 8
 import { UsersModule } from './modules/users/users.module.js';             // Fase 7
+import { MaintenancesModule } from './modules/maintenances/maintenances.module.js';
 import { MechanicsModule } from './modules/mechanics/mechanics.module.js';
 import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { WorkshopsModule } from './modules/workshops/workshops.module.js';
@@ -39,6 +40,7 @@ import { WorkshopsModule } from './modules/workshops/workshops.module.js';
         WorkshopsModule,
         MechanicsModule,
         VehiclesModule,
+        MaintenancesModule,
         // ProductsModule,  // Fase 8
         // DatabaseModule,  // Fase 10
     ],
