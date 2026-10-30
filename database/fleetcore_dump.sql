@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Yb5eyqCVRBpf9jNJfUxCg2sUFcHsLjeoi7SRFpoVU1CNyUVrLj5vURQWkxWGvBf
+\restrict GaHlUCIaDX6I3J9J94UuIN0UD6K6xPe1TcUHhBrld7DnNrp0zGTUQVl9YTn0JGm
 
 -- Dumped from database version 17.11
 -- Dumped by pg_dump version 17.11
@@ -44,6 +44,21 @@ DROP TYPE IF EXISTS public.mechanics_status_enum;
 DROP TYPE IF EXISTS public.maintenances_type_enum;
 DROP TYPE IF EXISTS public.maintenances_status_enum;
 DROP EXTENSION IF EXISTS "uuid-ossp";
+-- *not* dropping schema, since initdb creates it
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
 --
 -- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
 --
@@ -141,12 +156,12 @@ CREATE TABLE public.maintenances (
     scheduled_end timestamp with time zone NOT NULL,
     status public.maintenances_status_enum DEFAULT 'SCHEDULED'::public.maintenances_status_enum NOT NULL,
     work_done text,
+    final_cost integer,
     finished_at timestamp with time zone,
     final_mileage integer,
     "vehicleId" uuid NOT NULL,
     "mechanicId" uuid NOT NULL,
-    "workshopId" uuid NOT NULL,
-    final_cost integer
+    "workshopId" uuid NOT NULL
 );
 
 
@@ -220,9 +235,9 @@ CREATE TABLE public.workshops (
 -- Data for Name: maintenances; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.maintenances (id, created_at, updated_at, deleted_at, type, description, mileage, scheduled_start, scheduled_end, status, work_done, finished_at, final_mileage, "vehicleId", "mechanicId", "workshopId", final_cost) FROM stdin;
-65c4b833-a1a4-43bb-b458-31d93cc36c86	2026-10-30 00:19:48.619628+00	2026-10-30 00:19:48.619628+00	\N	PREVENTIVE	Cambio de aceite y filtros	45000	2026-09-15 14:00:00+00	2026-09-15 16:30:00+00	COMPLETED	Se cambio el aceite del motor y los dos filtros	2026-09-15 16:30:00+00	45200	f11f053b-d9c9-4b51-94b1-26df0d4fdb9e	1381f3fa-11ef-4c9b-8e4b-a1cd882d966d	14ef1cba-c5a9-4e62-a215-03a9ea5bd058	350000
-c043a936-882c-43b9-9a53-502a435726b2	2026-10-30 00:19:48.623704+00	2026-10-30 00:19:48.623704+00	\N	CORRECTIVE	Reparacion de la caja de cambios	78000	2026-11-10 13:00:00+00	2026-11-10 18:00:00+00	IN_PROGRESS	\N	\N	\N	95f20c27-93a9-4f6a-bbd9-488f5cb45d8a	8cd1b337-bceb-40fb-b6a5-bde6d58679bc	14ef1cba-c5a9-4e62-a215-03a9ea5bd058	\N
+COPY public.maintenances (id, created_at, updated_at, deleted_at, type, description, mileage, scheduled_start, scheduled_end, status, work_done, final_cost, finished_at, final_mileage, "vehicleId", "mechanicId", "workshopId") FROM stdin;
+5266cd47-ba4f-4523-91b6-0ee3691434a6	2026-10-30 00:29:52.966045+00	2026-10-30 00:29:52.966045+00	\N	PREVENTIVE	Cambio de aceite y filtros	45000	2026-09-15 14:00:00+00	2026-09-15 16:30:00+00	COMPLETED	Se cambio el aceite del motor y los dos filtros	350000	2026-09-15 16:30:00+00	45200	d41466b6-c73a-4925-be7f-d5ece4c21536	69630333-77f7-4c97-a5fa-2272b4b0c921	1836ed4a-4c10-4bd9-9cf8-3fc151fd9765
+f7193fcf-6748-46b1-9005-b3256af27cfb	2026-10-30 00:29:52.975818+00	2026-10-30 00:29:52.975818+00	\N	CORRECTIVE	Reparacion de la caja de cambios	78000	2026-11-10 13:00:00+00	2026-11-10 18:00:00+00	IN_PROGRESS	\N	\N	\N	\N	8091ed69-1f14-4d1c-9d90-360df444dcc4	e00c54d6-3b01-46a8-8ae0-51434517bcad	1836ed4a-4c10-4bd9-9cf8-3fc151fd9765
 \.
 
 
@@ -231,9 +246,9 @@ c043a936-882c-43b9-9a53-502a435726b2	2026-10-30 00:19:48.623704+00	2026-10-30 00
 --
 
 COPY public.mechanics (id, created_at, updated_at, deleted_at, name, email, specialty, status, user_id) FROM stdin;
-8cd1b337-bceb-40fb-b6a5-bde6d58679bc	2026-10-30 00:19:48.596137+00	2026-10-30 00:19:48.596137+00	\N	Juan Perez	juan.perez@fleetcore.com	Motor	ACTIVE	54b8a9d8-a913-4d97-b9ca-2b9bc7fa8e58
-1381f3fa-11ef-4c9b-8e4b-a1cd882d966d	2026-10-30 00:19:48.599786+00	2026-10-30 00:19:48.599786+00	\N	Laura Gomez	laura.gomez@fleetcore.com	Frenos	ACTIVE	06bddead-cbed-4f75-b600-afa00c49d994
-c5e1c4ad-1322-4468-b75b-da1732a7abc0	2026-10-30 00:19:48.602297+00	2026-10-30 00:19:48.602297+00	\N	Carlos Ruiz	carlos.ruiz@fleetcore.com	Electricidad	INACTIVE	\N
+e00c54d6-3b01-46a8-8ae0-51434517bcad	2026-10-30 00:29:52.938673+00	2026-10-30 00:29:52.938673+00	\N	Juan Perez	juan.perez@fleetcore.com	Motor	ACTIVE	69aad6fe-4ec5-4502-8205-e79b4aa411f8
+69630333-77f7-4c97-a5fa-2272b4b0c921	2026-10-30 00:29:52.942339+00	2026-10-30 00:29:52.942339+00	\N	Laura Gomez	laura.gomez@fleetcore.com	Frenos	ACTIVE	899b94dd-d407-4577-9522-0caaafc70fe1
+630a16fb-a638-4929-84c3-aab1df879283	2026-10-30 00:29:52.945061+00	2026-10-30 00:29:52.945061+00	\N	Carlos Ruiz	carlos.ruiz@fleetcore.com	Electricidad	INACTIVE	\N
 \.
 
 
@@ -242,9 +257,9 @@ c5e1c4ad-1322-4468-b75b-da1732a7abc0	2026-10-30 00:19:48.602297+00	2026-10-30 00
 --
 
 COPY public.users (id, created_at, updated_at, deleted_at, name, email, password, role) FROM stdin;
-b1f5e91d-ef18-4711-9f77-65cee12d0194	2026-10-30 00:19:48.462248+00	2026-10-30 00:19:48.462248+00	\N	Administrador FleetCore	admin@fleetcore.com	$2b$10$BvEK08acVe07tzRnSVW2V.xoUEDVuWe0b2Bk7jwdFsp.o2R5BIYSq	ADMIN
-54b8a9d8-a913-4d97-b9ca-2b9bc7fa8e58	2026-10-30 00:19:48.527911+00	2026-10-30 00:19:48.527911+00	\N	Juan Perez	juan.perez@fleetcore.com	$2b$10$3kyHAY1DBn4UDPvExIq6R.X8S6CK7I4rgN9AU8lkcU3d91DYQuC/a	TECHNICIAN
-06bddead-cbed-4f75-b600-afa00c49d994	2026-10-30 00:19:48.589595+00	2026-10-30 00:19:48.589595+00	\N	Laura Gomez	laura.gomez@fleetcore.com	$2b$10$UB/JCPyO5YNfm4WgCgpafe7MXLXExwGO82Fm1zrfdcWsBflfdiD9W	TECHNICIAN
+c3ed0b09-8a24-4cd8-a2f2-d1297f27ee2d	2026-10-30 00:29:52.803678+00	2026-10-30 00:29:52.803678+00	\N	Administrador FleetCore	admin@fleetcore.com	$2b$10$/6Mm3QGvQ5sEQAaaj8dEfOaSoyIo10eosFx9kuL6CYJLbjpxlUOAW	ADMIN
+69aad6fe-4ec5-4502-8205-e79b4aa411f8	2026-10-30 00:29:52.870472+00	2026-10-30 00:29:52.870472+00	\N	Juan Perez	juan.perez@fleetcore.com	$2b$10$jjYPYiBaR/klj6tc0Tw4/ewRl7NlERCvpXytG0ZVQfIvsj6hYGA4C	TECHNICIAN
+899b94dd-d407-4577-9522-0caaafc70fe1	2026-10-30 00:29:52.932585+00	2026-10-30 00:29:52.932585+00	\N	Laura Gomez	laura.gomez@fleetcore.com	$2b$10$LY5J2mfmHFylVPFEZ69GFOODZ5AmLJv.yPJppS7DI7GjakuHiCDtG	TECHNICIAN
 \.
 
 
@@ -253,10 +268,10 @@ b1f5e91d-ef18-4711-9f77-65cee12d0194	2026-10-30 00:19:48.462248+00	2026-10-30 00
 --
 
 COPY public.vehicles (id, created_at, updated_at, deleted_at, plate, brand, model, year, mileage, status) FROM stdin;
-f11f053b-d9c9-4b51-94b1-26df0d4fdb9e	2026-10-30 00:19:48.60946+00	2026-10-30 00:19:48.60946+00	\N	ABC123	Chevrolet	NPR	2020	45200	AVAILABLE
-caf17bca-b9cc-4c4e-afdc-fa24db5b16f5	2026-10-30 00:19:48.611925+00	2026-10-30 00:19:48.611925+00	\N	DEF456	Hino	300	2021	23000	AVAILABLE
-95f20c27-93a9-4f6a-bbd9-488f5cb45d8a	2026-10-30 00:19:48.613957+00	2026-10-30 00:19:48.613957+00	\N	GHI789	Isuzu	ELF	2019	78000	IN_MAINTENANCE
-d64a7c2f-53d2-430c-9ed1-d89931c643c5	2026-10-30 00:19:48.61582+00	2026-10-30 00:19:48.61582+00	\N	JKL012	Kia	K2700	2016	150000	INACTIVE
+d41466b6-c73a-4925-be7f-d5ece4c21536	2026-10-30 00:29:52.952335+00	2026-10-30 00:29:52.952335+00	\N	ABC123	Chevrolet	NPR	2020	45200	AVAILABLE
+6760f72f-3b19-4420-90e3-1d8d3ea16f75	2026-10-30 00:29:52.954973+00	2026-10-30 00:29:52.954973+00	\N	DEF456	Hino	300	2021	23000	AVAILABLE
+8091ed69-1f14-4d1c-9d90-360df444dcc4	2026-10-30 00:29:52.957337+00	2026-10-30 00:29:52.957337+00	\N	GHI789	Isuzu	ELF	2019	78000	IN_MAINTENANCE
+7979003c-0f93-4e4d-ba46-e5eb5a655404	2026-10-30 00:29:52.960011+00	2026-10-30 00:29:52.960011+00	\N	JKL012	Kia	K2700	2016	150000	INACTIVE
 \.
 
 
@@ -265,8 +280,8 @@ d64a7c2f-53d2-430c-9ed1-d89931c643c5	2026-10-30 00:19:48.61582+00	2026-10-30 00:
 --
 
 COPY public.workshops (id, created_at, updated_at, deleted_at, name, address, status) FROM stdin;
-14ef1cba-c5a9-4e62-a215-03a9ea5bd058	2026-10-30 00:19:48.604918+00	2026-10-30 00:19:48.604918+00	\N	Taller Norte	Calle 80 # 45-12, Medellin	ACTIVE
-184605aa-430a-4d32-b0e4-e271957127bf	2026-10-30 00:19:48.6069+00	2026-10-30 00:19:48.6069+00	\N	Taller Centro	Carrera 50 # 10-20, Medellin	INACTIVE
+1836ed4a-4c10-4bd9-9cf8-3fc151fd9765	2026-10-30 00:29:52.947565+00	2026-10-30 00:29:52.947565+00	\N	Taller Norte	Calle 80 # 45-12, Medellin	ACTIVE
+d6ea7df8-446e-40a6-aa80-336e967f3081	2026-10-30 00:29:52.94974+00	2026-10-30 00:29:52.94974+00	\N	Taller Centro	Carrera 50 # 10-20, Medellin	INACTIVE
 \.
 
 
@@ -378,5 +393,5 @@ ALTER TABLE ONLY public.maintenances
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Yb5eyqCVRBpf9jNJfUxCg2sUFcHsLjeoi7SRFpoVU1CNyUVrLj5vURQWkxWGvBf
+\unrestrict GaHlUCIaDX6I3J9J94UuIN0UD6K6xPe1TcUHhBrld7DnNrp0zGTUQVl9YTn0JGm
 
