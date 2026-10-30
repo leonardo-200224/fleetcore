@@ -316,7 +316,6 @@ En la carpeta `postman/` esta la coleccion con los escenarios principales:
 
 ```
 postman/FleetCore.postman_collection.json   43 peticiones en 8 carpetas
-postman/resultado-newman.txt                el resultado de ejecutarla
 ```
 
 Para usarla:
@@ -328,14 +327,6 @@ Para usarla:
 4. Ejecutarla entera con el *Collection Runner*, en orden: las peticiones se
    encadenan solas, los logins guardan los tokens y las consultas guardan los
    ids que necesitan las siguientes.
-
-Tambien se puede correr desde la terminal sin instalar nada:
-
-```bash
-npx newman run postman/FleetCore.postman_collection.json
-```
-
-La ultima ejecucion: **43 peticiones, 58 comprobaciones, 0 fallos**.
 
 Lo que cubre, carpeta por carpeta:
 
