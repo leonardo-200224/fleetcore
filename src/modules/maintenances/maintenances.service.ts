@@ -1,9 +1,12 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, MoreThan, Repository } from 'typeorm';
 import {
-    ESTADOS_ACTIVOS, MaintenanceStatus,
+    BadRequestException, ConflictException, Injectable, NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, LessThan, MoreThan, Repository } from 'typeorm';
+import {
+    ESTADOS_ACTIVOS, MaintenanceStatus, TRANSICIONES_PERMITIDAS,
 } from '../../common/enums/maintenance-status.enum.js';
+import { VehicleStatus } from '../../common/enums/vehicle-status.enum.js';
 import { MechanicsService } from '../mechanics/mechanics.service.js';
 import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { WorkshopsService } from '../workshops/workshops.service.js';
@@ -18,6 +21,7 @@ export class MaintenancesService {
         private readonly vehiclesService: VehiclesService,
         private readonly mechanicsService: MechanicsService,
         private readonly workshopsService: WorkshopsService,
+        private readonly dataSource: DataSource, // para las transacciones
     ) {}
 
     /**
@@ -60,6 +64,65 @@ export class MaintenancesService {
             workshop,
         });
         return this.maintenancesRepo.save(maintenance);
+    }
+
+    async findOne(id: string) {
+        const maintenance = await this.maintenancesRepo.findOne({ where: { id } });
+        if (!maintenance) throw new NotFoundException(`Mantenimiento ${id} no encontrado`);
+        return maintenance;
+    }
+
+    /**
+     * Cambia el estado del mantenimiento (requisito 5.7) y arrastra el estado
+     * del vehiculo, que es lo que pide el requisito 6:
+     *   - a IN_PROGRESS -> el vehiculo pasa a IN_MAINTENANCE
+     *   - cancelado estando IN_PROGRESS -> el vehiculo vuelve a AVAILABLE
+     *
+     * Los dos cambios van dentro de una TRANSACCION: o se guardan los dos, o
+     * no se guarda ninguno. Si se guardara solo uno, el vehiculo podria quedar
+     * IN_MAINTENANCE sin ningun mantenimiento en curso, o al reves.
+     */
+    async changeStatus(id: string, nuevoEstado: MaintenanceStatus) {
+        const maintenance = await this.findOne(id);
+        const estadoAnterior = maintenance.status;
+        this.validarTransicion(estadoAnterior, nuevoEstado);
+
+        return this.dataSource.transaction(async (manager) => {
+            maintenance.status = nuevoEstado;
+
+            if (nuevoEstado === MaintenanceStatus.IN_PROGRESS) {
+                maintenance.vehicle.status = VehicleStatus.IN_MAINTENANCE;
+                await manager.save(maintenance.vehicle);
+            } else if (
+                nuevoEstado === MaintenanceStatus.CANCELLED &&
+                estadoAnterior === MaintenanceStatus.IN_PROGRESS
+            ) {
+                // Se cancelo un trabajo que ya habia empezado: el vehiculo
+                // tiene que volver a quedar disponible.
+                maintenance.vehicle.status = VehicleStatus.AVAILABLE;
+                await manager.save(maintenance.vehicle);
+            }
+
+            return manager.save(maintenance);
+        });
+    }
+
+    // Comprueba el mapa de transiciones y, si no se puede, responde 409
+    // con un mensaje que dice exactamente que se intento (requisito 6).
+    private validarTransicion(actual: MaintenanceStatus, nuevo: MaintenanceStatus) {
+        if (actual === nuevo) {
+            throw new ConflictException(`El mantenimiento ya esta en estado ${actual}`);
+        }
+
+        const permitidos = TRANSICIONES_PERMITIDAS[actual];
+        if (!permitidos.includes(nuevo)) {
+            const detalle = permitidos.length
+                ? `solo puede pasar a ${permitidos.join(' o ')}`
+                : 'es un estado final y ya no puede cambiar';
+            throw new ConflictException(
+                `Un mantenimiento en estado ${actual} ${detalle}`,
+            );
+        }
     }
 
     /**

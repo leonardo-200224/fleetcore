@@ -14,3 +14,27 @@ export const ESTADOS_ACTIVOS = [
     MaintenanceStatus.SCHEDULED,
     MaintenanceStatus.IN_PROGRESS,
 ];
+
+/**
+ * Mapa de transiciones permitidas (requisito 6).
+ *
+ * El enunciado dice que un COMPLETED no puede volver atras y que un
+ * CANCELLED no puede pasar a IN_PROGRESS ni a COMPLETED, asi que esos
+ * dos son estados finales: su lista queda vacia.
+ *
+ * Lo que el enunciado NO dice es que pasa con el vehiculo si se cancela
+ * un mantenimiento que ya estaba IN_PROGRESS. Lo decido aqui: el vehiculo
+ * vuelve a AVAILABLE, porque si no quedaria IN_MAINTENANCE para siempre.
+ */
+export const TRANSICIONES_PERMITIDAS: Record<MaintenanceStatus, MaintenanceStatus[]> = {
+    [MaintenanceStatus.SCHEDULED]: [
+        MaintenanceStatus.IN_PROGRESS,
+        MaintenanceStatus.CANCELLED,
+    ],
+    [MaintenanceStatus.IN_PROGRESS]: [
+        MaintenanceStatus.COMPLETED,
+        MaintenanceStatus.CANCELLED,
+    ],
+    [MaintenanceStatus.COMPLETED]: [],
+    [MaintenanceStatus.CANCELLED]: [],
+};
