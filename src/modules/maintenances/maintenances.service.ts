@@ -1,12 +1,15 @@
 import {
-    BadRequestException, ConflictException, Injectable, NotFoundException,
+    BadRequestException, ConflictException, ForbiddenException, Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, LessThan, MoreThan, Repository } from 'typeorm';
 import {
     ESTADOS_ACTIVOS, MaintenanceStatus, TRANSICIONES_PERMITIDAS,
 } from '../../common/enums/maintenance-status.enum.js';
+import { Role } from '../../common/enums/role.enum.js';
 import { VehicleStatus } from '../../common/enums/vehicle-status.enum.js';
+import type { JwtPayload } from '../../common/interfaces/jwt-payload.interface.js';
 import { MechanicsService } from '../mechanics/mechanics.service.js';
 import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { WorkshopsService } from '../workshops/workshops.service.js';
@@ -75,6 +78,77 @@ export class MaintenancesService {
     }
 
     /**
+     * Igual que findOne, pero comprobando que el TECHNICIAN solo pueda ver
+     * los mantenimientos que tiene asignados. El RolesGuard no sirve para
+     * esto: el rol es correcto, lo que falla es que el trabajo no es suyo.
+     */
+    async findOneForUser(id: string, user: JwtPayload) {
+        const maintenance = await this.findOne(id);
+        await this.validarQueEsSuyo(maintenance, user);
+        return maintenance;
+    }
+
+    // ---- Consultas del requisito 5.8 ----
+
+    // a. Todos los mantenimientos.
+    findAll() {
+        return this.maintenancesRepo.find({ order: { scheduledStart: 'DESC' } });
+    }
+
+    // b. Solo los activos, es decir SCHEDULED o IN_PROGRESS.
+    findActive() {
+        return this.maintenancesRepo.find({
+            where: { status: In(ESTADOS_ACTIVOS) },
+            order: { scheduledStart: 'ASC' },
+        });
+    }
+
+    // c. Los de un vehiculo concreto, en cualquier estado.
+    async findByVehicle(vehicleId: string) {
+        await this.vehiclesService.findOne(vehicleId); // 404 si no existe
+        return this.maintenancesRepo.find({
+            where: { vehicle: { id: vehicleId } },
+            order: { scheduledStart: 'DESC' },
+        });
+    }
+
+    // d. Los asignados a un mecanico.
+    async findByMechanic(mechanicId: string) {
+        await this.mechanicsService.findOne(mechanicId); // 404 si no existe
+        return this.maintenancesRepo.find({
+            where: { mechanic: { id: mechanicId } },
+            order: { scheduledStart: 'DESC' },
+        });
+    }
+
+    /**
+     * e. Historial de un vehiculo: solo los trabajos que de verdad se
+     * hicieron, o sea los COMPLETED. Un mantenimiento cancelado o todavia
+     * programado no es historial, es una intencion.
+     */
+    async findHistoryByVehicle(vehicleId: string) {
+        await this.vehiclesService.findOne(vehicleId);
+        return this.maintenancesRepo.find({
+            where: {
+                vehicle: { id: vehicleId },
+                status: MaintenanceStatus.COMPLETED,
+            },
+            order: { finishedAt: 'DESC' },
+        });
+    }
+
+    // Los mantenimientos del tecnico que esta conectado (criterio 1.2.b).
+    async findMine(userId: string) {
+        const mechanic = await this.mechanicsService.findByUserId(userId);
+        if (!mechanic) return []; // el usuario aun no tiene ficha de mecanico
+
+        return this.maintenancesRepo.find({
+            where: { mechanic: { id: mechanic.id } },
+            order: { scheduledStart: 'DESC' },
+        });
+    }
+
+    /**
      * Cambia el estado del mantenimiento (requisito 5.7) y arrastra el estado
      * del vehiculo, que es lo que pide el requisito 6:
      *   - a IN_PROGRESS -> el vehiculo pasa a IN_MAINTENANCE
@@ -84,8 +158,9 @@ export class MaintenancesService {
      * no se guarda ninguno. Si se guardara solo uno, el vehiculo podria quedar
      * IN_MAINTENANCE sin ningun mantenimiento en curso, o al reves.
      */
-    async changeStatus(id: string, nuevoEstado: MaintenanceStatus) {
+    async changeStatus(id: string, nuevoEstado: MaintenanceStatus, user: JwtPayload) {
         const maintenance = await this.findOne(id);
+        await this.validarQueEsSuyo(maintenance, user);
         const estadoAnterior = maintenance.status;
         this.validarTransicion(estadoAnterior, nuevoEstado);
 
@@ -117,8 +192,9 @@ export class MaintenancesService {
      * el cambio de estado, va en una transaccion: el mantenimiento se cierra y
      * el vehiculo se libera a la vez.
      */
-    async complete(id: string, dto: CompleteMaintenanceDto) {
+    async complete(id: string, dto: CompleteMaintenanceDto, user: JwtPayload) {
         const maintenance = await this.findOne(id);
+        await this.validarQueEsSuyo(maintenance, user);
         this.validarTransicion(maintenance.status, MaintenanceStatus.COMPLETED);
 
         const vehicle = maintenance.vehicle;
@@ -151,6 +227,22 @@ export class MaintenancesService {
 
             return manager.save(maintenance);
         });
+    }
+
+    /**
+     * El ADMIN gestiona todo; el TECHNICIAN solo lo que tiene asignado.
+     *
+     * Esta comprobacion va aqui y no en un guard porque depende de los datos:
+     * hay que cargar el mantenimiento y el mecanico del usuario para saber si
+     * coinciden. Un tecnico que toca un trabajo ajeno recibe 403.
+     */
+    private async validarQueEsSuyo(maintenance: Maintenance, user: JwtPayload) {
+        if (user.role === Role.ADMIN) return;
+
+        const mechanic = await this.mechanicsService.findByUserId(user.sub);
+        if (!mechanic || mechanic.id !== maintenance.mechanic.id) {
+            throw new ForbiddenException('Este mantenimiento no esta asignado a ti');
+        }
     }
 
     // Comprueba el mapa de transiciones y, si no se puede, responde 409

@@ -74,6 +74,17 @@ export class MechanicsService {
         return mechanic;
     }
 
+    /**
+     * Devuelve el mecanico vinculado a una cuenta de usuario.
+     *
+     * Lo usa mantenimientos para saber que trabajos son "los suyos" cuando
+     * entra un TECHNICIAN. Puede no existir: un usuario tecnico recien
+     * registrado todavia no tiene ficha de mecanico.
+     */
+    findByUserId(userId: string) {
+        return this.mechanicsRepo.findOne({ where: { user: { id: userId } } });
+    }
+
     private async validarEmailLibre(email: string) {
         const existe = await this.mechanicsRepo.findOne({ where: { email } });
         if (existe) throw new ConflictException('Ya hay un mecanico con ese correo');
