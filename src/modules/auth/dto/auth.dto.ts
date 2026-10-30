@@ -10,9 +10,9 @@ const toLowerTrim = ({ value }: { value: unknown }) =>
 
 export class RegisterDto {
     @ApiProperty({ example: 'Ana Pérez' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
+    @IsString({ message: 'El nombre debe ser texto' })
+    @IsNotEmpty({ message: 'El nombre es obligatorio' })
+    @MaxLength(100, { message: 'El nombre no puede pasar de 100 caracteres' })
     name: string;
 
     @ApiProperty({ example: 'ana@mail.com' })
@@ -21,8 +21,8 @@ export class RegisterDto {
     email: string;
 
     @ApiProperty({ example: 'Clave1234' })
-    @IsString()
-    @MinLength(8)
+    @IsString({ message: 'La contraseña debe ser texto' })
+    @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
     @Matches(/^(?=.*[A-Z])(?=.*\d).+$/, {
         message: 'La contraseña necesita al menos una mayúscula y un número',
     })
@@ -39,11 +39,11 @@ export class RegisterDto {
 export class LoginDto {
     @ApiProperty({ example: 'ana@mail.com' })
     @Transform(toLowerTrim)
-    @IsEmail()
+    @IsEmail({}, { message: 'El email no es valido' })
     email: string;
 
     @ApiProperty({ example: 'Clave1234' })
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'La contraseña debe ser texto' })
+    @IsNotEmpty({ message: 'La contraseña es obligatoria' })
     password: string;
 }

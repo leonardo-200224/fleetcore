@@ -11,12 +11,12 @@ export class CreateMaintenanceDto {
     type: MaintenanceType;
 
     @ApiProperty({ example: 'Cambio de aceite y filtros' })
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'La descripcion debe ser texto' })
+    @IsNotEmpty({ message: 'La descripcion del mantenimiento es obligatoria' })
     description: string;
 
     @ApiProperty({ example: 45000, description: 'Kilometraje del vehiculo al programar' })
-    @IsInt()
+    @IsInt({ message: 'El kilometraje debe ser un numero entero' })
     @Min(0, { message: 'El kilometraje no puede ser negativo' })
     mileage: number;
 

@@ -8,9 +8,9 @@ const toLowerTrim = ({ value }: { value: unknown }) =>
 
 export class CreateMechanicDto {
     @ApiProperty({ example: 'Carlos Perez' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
+    @IsString({ message: 'El nombre debe ser texto' })
+    @IsNotEmpty({ message: 'El nombre del mecanico es obligatorio' })
+    @MaxLength(100, { message: 'El nombre no puede pasar de 100 caracteres' })
     name: string;
 
     @ApiProperty({ example: 'carlos@fleetcore.com' })
@@ -19,9 +19,9 @@ export class CreateMechanicDto {
     email: string;
 
     @ApiProperty({ example: 'Motor' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
+    @IsString({ message: 'La especialidad debe ser texto' })
+    @IsNotEmpty({ message: 'La especialidad es obligatoria' })
+    @MaxLength(100, { message: 'La especialidad no puede pasar de 100 caracteres' })
     specialty: string;
 
     // Opcional a proposito: hay mecanicos sin cuenta de usuario.
@@ -30,7 +30,7 @@ export class CreateMechanicDto {
         example: '6f1c9b2e-4d3a-4c7e-9f21-8a5b3c7d1e40',
     })
     @IsOptional()
-    @IsUUID()
+    @IsUUID('4', { message: 'El id del usuario no es valido' })
     userId?: string;
 }
 
@@ -40,9 +40,9 @@ export class CreateMechanicDto {
 export class UpdateMechanicDto {
     @ApiPropertyOptional({ example: 'Carlos Perez Gomez' })
     @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
+    @IsString({ message: 'El nombre debe ser texto' })
+    @IsNotEmpty({ message: 'El nombre no puede quedar vacio' })
+    @MaxLength(100, { message: 'El nombre no puede pasar de 100 caracteres' })
     name?: string;
 
     @ApiPropertyOptional({ example: 'carlos.perez@fleetcore.com' })
@@ -53,9 +53,9 @@ export class UpdateMechanicDto {
 
     @ApiPropertyOptional({ example: 'Frenos' })
     @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(100)
+    @IsString({ message: 'La especialidad debe ser texto' })
+    @IsNotEmpty({ message: 'La especialidad no puede quedar vacia' })
+    @MaxLength(100, { message: 'La especialidad no puede pasar de 100 caracteres' })
     specialty?: string;
 }
 

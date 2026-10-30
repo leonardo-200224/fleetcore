@@ -13,33 +13,33 @@ const toUpperTrim = ({ value }: { value: unknown }) =>
 export class CreateVehicleDto {
     @ApiProperty({ example: 'ABC123' })
     @Transform(toUpperTrim)
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(10)
+    @IsString({ message: 'La placa debe ser texto' })
+    @IsNotEmpty({ message: 'La placa es obligatoria' })
+    @MaxLength(10, { message: 'La placa no puede pasar de 10 caracteres' })
     @Matches(/^[A-Z0-9-]+$/, { message: 'La placa solo admite letras, numeros y guion' })
     plate: string;
 
     @ApiProperty({ example: 'Chevrolet' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(50)
+    @IsString({ message: 'La marca debe ser texto' })
+    @IsNotEmpty({ message: 'La marca es obligatoria' })
+    @MaxLength(50, { message: 'La marca no puede pasar de 50 caracteres' })
     brand: string;
 
     @ApiProperty({ example: 'NPR' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(50)
+    @IsString({ message: 'El modelo debe ser texto' })
+    @IsNotEmpty({ message: 'El modelo es obligatorio' })
+    @MaxLength(50, { message: 'El modelo no puede pasar de 50 caracteres' })
     model: string;
 
     @ApiProperty({ example: 2020 })
-    @IsInt()
-    @Min(1900)
-    @Max(2100)
+    @IsInt({ message: 'El anio debe ser un numero entero' })
+    @Min(1900, { message: 'El anio no puede ser anterior a 1900' })
+    @Max(2100, { message: 'El anio no puede ser posterior a 2100' })
     year: number;
 
     @ApiPropertyOptional({ example: 45000, description: 'Kilometraje actual; si no se envia queda en 0' })
     @IsOptional()
-    @IsInt()
+    @IsInt({ message: 'El kilometraje debe ser un numero entero' })
     @Min(0, { message: 'El kilometraje no puede ser negativo' })
     mileage?: number;
 }
@@ -50,28 +50,28 @@ export class CreateVehicleDto {
 export class UpdateVehicleDto {
     @ApiPropertyOptional({ example: 'Chevrolet' })
     @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(50)
+    @IsString({ message: 'La marca debe ser texto' })
+    @IsNotEmpty({ message: 'La marca no puede quedar vacia' })
+    @MaxLength(50, { message: 'La marca no puede pasar de 50 caracteres' })
     brand?: string;
 
     @ApiPropertyOptional({ example: 'NPR Reward' })
     @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(50)
+    @IsString({ message: 'El modelo debe ser texto' })
+    @IsNotEmpty({ message: 'El modelo no puede quedar vacio' })
+    @MaxLength(50, { message: 'El modelo no puede pasar de 50 caracteres' })
     model?: string;
 
     @ApiPropertyOptional({ example: 2021 })
     @IsOptional()
-    @IsInt()
-    @Min(1900)
-    @Max(2100)
+    @IsInt({ message: 'El anio debe ser un numero entero' })
+    @Min(1900, { message: 'El anio no puede ser anterior a 1900' })
+    @Max(2100, { message: 'El anio no puede ser posterior a 2100' })
     year?: number;
 
     @ApiPropertyOptional({ example: 52300 })
     @IsOptional()
-    @IsInt()
+    @IsInt({ message: 'El kilometraje debe ser un numero entero' })
     @Min(0, { message: 'El kilometraje no puede ser negativo' })
     mileage?: number;
 }
