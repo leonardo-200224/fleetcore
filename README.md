@@ -310,6 +310,48 @@ src/
 
 ---
 
+## Evidencias de las pruebas
+
+En la carpeta `postman/` esta la coleccion con los escenarios principales:
+
+```
+postman/FleetCore.postman_collection.json   43 peticiones en 8 carpetas
+postman/resultado-newman.txt                el resultado de ejecutarla
+```
+
+Para usarla:
+
+1. Levantar la API y correr `npm run seed`.
+2. Importar el archivo en Postman (boton *Import*).
+3. Si la contrasena del ADMIN del `.env` no es `Admin12345`, cambiarla en la
+   variable `admin_password` de la coleccion.
+4. Ejecutarla entera con el *Collection Runner*, en orden: las peticiones se
+   encadenan solas, los logins guardan los tokens y las consultas guardan los
+   ids que necesitan las siguientes.
+
+Tambien se puede correr desde la terminal sin instalar nada:
+
+```bash
+npx newman run postman/FleetCore.postman_collection.json
+```
+
+La ultima ejecucion: **43 peticiones, 58 comprobaciones, 0 fallos**.
+
+Lo que cubre, carpeta por carpeta:
+
+| Carpeta | Que comprueba |
+|---|---|
+| 1. Autenticacion | registro con rol, login de ADMIN y de los dos tecnicos, y que la contrasena nunca sale en una respuesta |
+| 2. Accesos denegados | los cuatro casos del requisito 1.10: sin token, token invalido, rol sin permisos y API Key incorrecta |
+| 3. Vehiculos, mecanicos y talleres | listados, busqueda por placa, placa repetida, el mecanico sin usuario y que talleres solo devuelve los activos |
+| 4. Reglas de negocio | vehiculo inactivo, mecanico inactivo, vehiculo ya ocupado, kilometraje inferior y fechas al reves |
+| 5. Cruce de horarios | los ejemplos c y d del enunciado: a las 8:00 se rechaza, a las 9:00 se permite |
+| 6. Estados y transaccion | el vehiculo antes y despues de iniciar, un tecnico tocando trabajo ajeno, cierre sin datos y cierre correcto |
+| 7. Consultas | las cinco del requisito 5.8 y las del tecnico |
+| 8. Integracion | la x-api-key correcta, ausente, incorrecta, y que no abre las rutas normales |
+
+---
+
 ## Base de datos
 
 El archivo `database/fleetcore_dump.sql` tiene la estructura y los datos del

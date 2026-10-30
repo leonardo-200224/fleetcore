@@ -1,0 +1,222 @@
+Resultado de ejecutar la coleccion de Postman contra la API.
+Comando: npx newman run postman/FleetCore.postman_collection.json
+Fecha: 29/10/2026 19:46
+
+newman
+
+FleetCore API - Prueba de desempeno 6.2
+
+❏ 1. Autenticacion (requisito 1)
+↳ Registrar un usuario TECHNICIAN
+  POST http://localhost:3000/api/auth/register [201 Created, 1.42kB, 87ms]
+  ✓  Responde 201 o 409 si ya existe
+
+↳ Login ADMIN
+  POST http://localhost:3000/api/auth/login [200 OK, 1.39kB, 68ms]
+  ✓  Responde 200
+  ✓  El usuario es ADMIN
+
+↳ Login TECHNICIAN Juan
+  POST http://localhost:3000/api/auth/login [200 OK, 1.4kB, 63ms]
+  ✓  Responde 200
+
+↳ Login TECHNICIAN Laura
+  POST http://localhost:3000/api/auth/login [200 OK, 1.4kB, 63ms]
+  ✓  Responde 200
+
+↳ La contrasena nunca sale en la respuesta
+  GET http://localhost:3000/api/users/me [200 OK, 1.2kB, 4ms]
+  ✓  Responde 200
+  ✓  No viene el campo password
+
+❏ 2. Accesos denegados (requisito 1.10)
+↳ a. Sin token -> 401
+  GET http://localhost:3000/api/maintenances [401 Unauthorized, 1.05kB, 2ms]
+  ✓  Responde 401
+
+↳ b. Token invalido -> 401
+  GET http://localhost:3000/api/maintenances [401 Unauthorized, 1.06kB, 2ms]
+  ✓  Responde 401
+
+↳ c. Rol sin permisos -> 403
+  GET http://localhost:3000/api/maintenances [403 Forbidden, 1.06kB, 3ms]
+  ✓  Responde 403
+
+↳ d. API Key incorrecta -> 401
+  GET http://localhost:3000/api/integrations/vehicles/ABC123 [401 Unauthorized, 1.07kB, 3ms]
+  ✓  Responde 401
+
+❏ 3. Vehiculos, mecanicos y talleres (requisitos 2, 3 y 4)
+↳ Listar vehiculos
+  GET http://localhost:3000/api/vehicles [200 OK, 1.95kB, 4ms]
+  ✓  Responde 200
+  ✓  Los 4 vehiculos del seeder
+
+↳ Buscar por placa (requisito 2.5)
+  GET http://localhost:3000/api/vehicles/plate/abc123 [200 OK, 1.23kB, 3ms]
+  ✓  Responde 200
+
+↳ Placa repetida -> 409 (requisito 2.4)
+  POST http://localhost:3000/api/vehicles [409 Conflict, 1.06kB, 10ms]
+  ✓  Responde 409
+
+↳ Listar mecanicos (requisito 3.3)
+  GET http://localhost:3000/api/mechanics [200 OK, 2.17kB, 5ms]
+  ✓  Responde 200
+  ✓  Hay un mecanico sin usuario
+
+↳ Listar talleres (requisito 4.3)
+  GET http://localhost:3000/api/workshops [200 OK, 1.21kB, 5ms]
+  ✓  Responde 200
+  ✓  Solo sale el taller activo
+
+❏ 4. Reglas de negocio al crear (requisito 6)
+↳ Vehiculo INACTIVE -> 400 (requisito 2.9)
+  POST http://localhost:3000/api/maintenances [400 Bad Request, 1.06kB, 3ms]
+  ✓  Responde 400
+
+↳ Mecanico inactivo -> 400 (requisito 3.7)
+  POST http://localhost:3000/api/maintenances [400 Bad Request, 1.07kB, 7ms]
+  ✓  Responde 400
+
+↳ Vehiculo con otro activo -> 409
+  POST http://localhost:3000/api/maintenances [409 Conflict, 1.08kB, 18ms]
+  ✓  Responde 409
+  ✓  Lo dice con la placa
+
+↳ Kilometraje inferior al del vehiculo -> 400
+  POST http://localhost:3000/api/maintenances [400 Bad Request, 1.09kB, 14ms]
+  ✓  Responde 400
+
+↳ Fecha de fin anterior al inicio -> 400
+  POST http://localhost:3000/api/maintenances [400 Bad Request, 1.08kB, 5ms]
+  ✓  Responde 400
+
+❏ 5. Cruce de horarios del mecanico (requisito 3.10)
+↳ Crear uno de 7:30 a 9:00
+  POST http://localhost:3000/api/maintenances [201 Created, 2.35kB, 34ms]
+  ✓  Responde 201
+  ✓  Nace como SCHEDULED (requisito 5.5)
+
+↳ Ejemplo c: otro a las 8:00 -> 409
+  POST http://localhost:3000/api/maintenances [409 Conflict, 1.09kB, 35ms]
+  ✓  Responde 409
+
+↳ Ejemplo d: otro a las 9:00 -> 201
+  POST http://localhost:3000/api/maintenances [201 Created, 2.34kB, 32ms]
+  ✓  Responde 201
+
+❏ 6. Estados, transaccion y cierre (requisitos 5.7, 5.9 y 6)
+↳ Antes: el vehiculo esta AVAILABLE
+  GET http://localhost:3000/api/vehicles/ed5d7811-490e-4798-9f17-ed029f2eb202 [200 OK, 1.23kB, 6ms]
+  ✓  Responde 200
+  ✓  AVAILABLE
+
+↳ Laura inicia SU mantenimiento
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/status [200 OK, 2.35kB, 31ms]
+  ✓  Responde 200
+
+↳ Despues: el vehiculo quedo IN_MAINTENANCE
+  GET http://localhost:3000/api/vehicles/ed5d7811-490e-4798-9f17-ed029f2eb202 [200 OK, 1.23kB, 6ms]
+  ✓  Responde 200
+  ✓  IN_MAINTENANCE
+
+↳ Juan intenta tocar el de Laura -> 403
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/status [403 Forbidden, 1.11kB, 14ms]
+  ✓  Responde 403
+
+↳ Cerrar sin los datos obligatorios -> 400
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/complete [400 Bad Request, 1.3kB, 5ms]
+  ✓  Responde 400
+
+↳ Cerrar con kilometraje menor -> 400
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/complete [400 Bad Request, 1.15kB, 28ms]
+  ✓  Responde 400
+
+↳ Cierre correcto
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/complete [200 OK, 2.4kB, 31ms]
+  ✓  Responde 200
+  ✓  Queda COMPLETED
+
+↳ El vehiculo vuelve a AVAILABLE con el km final
+  GET http://localhost:3000/api/vehicles/ed5d7811-490e-4798-9f17-ed029f2eb202 [200 OK, 1.23kB, 8ms]
+  ✓  Responde 200
+  ✓  AVAILABLE y 45800 km
+
+↳ Un COMPLETED no vuelve atras -> 409
+  PATCH http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993/status [409 Conflict, 1.15kB, 9ms]
+  ✓  Responde 409
+
+❏ 7. Consultas (requisito 5.8)
+↳ a. Todos los mantenimientos
+  GET http://localhost:3000/api/maintenances [200 OK, 6.53kB, 8ms]
+  ✓  Responde 200
+
+↳ b. Solo los activos
+  GET http://localhost:3000/api/maintenances/active [200 OK, 3.69kB, 5ms]
+  ✓  Responde 200
+  ✓  Todos SCHEDULED o IN_PROGRESS
+
+↳ c. Los de un vehiculo
+  GET http://localhost:3000/api/maintenances/vehicle/ed5d7811-490e-4798-9f17-ed029f2eb202 [200 OK, 3.83kB, 7ms]
+  ✓  Responde 200
+
+↳ d. Los de un mecanico
+  GET http://localhost:3000/api/maintenances/mechanic/75cf3430-21ad-40ca-a92c-4096afea4c55 [200 OK, 5.18kB, 10ms]
+  ✓  Responde 200
+
+↳ e. Historial del vehiculo (solo COMPLETED)
+  GET http://localhost:3000/api/maintenances/vehicle/ed5d7811-490e-4798-9f17-ed029f2eb202/history [200 OK, 3.83kB, 8ms]
+  ✓  Responde 200
+  ✓  Solo completados
+
+↳ El tecnico consulta los suyos
+  GET http://localhost:3000/api/maintenances/mine [200 OK, 2.35kB, 10ms]
+  ✓  Responde 200
+
+↳ Juan abre un mantenimiento ajeno -> 403
+  GET http://localhost:3000/api/maintenances/5a64a9aa-9351-4dd0-b378-2c450db99993 [403 Forbidden, 1.11kB, 11ms]
+  ✓  Responde 403
+
+❏ 8. Integracion externa con x-api-key (requisito 1.8)
+↳ Ficha del vehiculo con API Key valida
+  GET http://localhost:3000/api/integrations/vehicles/ABC123 [200 OK, 1.9kB, 15ms]
+  ✓  Responde 200
+  ✓  Trae vehiculo e historial
+  ✓  available es booleano
+
+↳ Sin la cabecera -> 401
+  GET http://localhost:3000/api/integrations/vehicles/ABC123 [401 Unauthorized, 1.07kB, 2ms]
+  ✓  Responde 401
+
+↳ Con token JWT pero sin API Key -> 401
+  GET http://localhost:3000/api/integrations/vehicles/ABC123 [401 Unauthorized, 1.07kB, 2ms]
+  ✓  Responde 401
+
+↳ La API Key no abre las rutas normales -> 401
+  GET http://localhost:3000/api/vehicles [401 Unauthorized, 1.04kB, 1ms]
+  ✓  Responde 401
+
+↳ Placa que no existe -> 404
+  GET http://localhost:3000/api/integrations/vehicles/NOEXISTE [404 Not Found, 1.09kB, 6ms]
+  ✓  Responde 404
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               43 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               43 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │                0 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               58 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 1335ms                                    │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 36.39kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 16ms [min: 1ms, max: 87ms, s.d.: 19ms] │
+└───────────────────────────────────────────────────────────────┘

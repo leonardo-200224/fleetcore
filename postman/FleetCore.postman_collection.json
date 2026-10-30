@@ -1,0 +1,1823 @@
+{
+  "info": {
+    "name": "FleetCore API - Prueba de desempeno 6.2",
+    "description": "Evidencias de los escenarios principales de la API de FleetCore.\n\nComo usarla:\n1. Levantar la API (npm run start:dev) y poblar la base (npm run seed).\n2. Importar esta coleccion en Postman.\n3. Si la contrasena del ADMIN no es Admin12345, cambiarla en la variable admin_password.\n4. Ejecutar la coleccion entera con el Collection Runner, en orden.\n\nLas peticiones se encadenan solas: los logins guardan los tokens y las\nconsultas guardan los ids que necesitan las siguientes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@fleetcore.com"
+    },
+    {
+      "key": "admin_password",
+      "value": "Admin12345"
+    },
+    {
+      "key": "api_key",
+      "value": "demo-key-partner-1"
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_juan",
+      "value": ""
+    },
+    {
+      "key": "token_laura",
+      "value": ""
+    },
+    {
+      "key": "vehiculo_abc",
+      "value": ""
+    },
+    {
+      "key": "vehiculo_ghi",
+      "value": ""
+    },
+    {
+      "key": "vehiculo_jkl",
+      "value": ""
+    },
+    {
+      "key": "mecanico_laura",
+      "value": ""
+    },
+    {
+      "key": "mecanico_inactivo",
+      "value": ""
+    },
+    {
+      "key": "taller_activo",
+      "value": ""
+    },
+    {
+      "key": "mantenimiento_nuevo",
+      "value": ""
+    },
+    {
+      "key": "vehiculo_def",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticacion (requisito 1)",
+      "item": [
+        {
+          "name": "Registrar un usuario TECHNICIAN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Requisito 1.1: registro con rol ADMIN o TECHNICIAN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tecnico de prueba\",\n  \"email\": \"prueba.evidencia@fleetcore.com\",\n  \"password\": \"Clave1234\",\n  \"role\": \"TECHNICIAN\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 o 409 si ya existe\", function () {",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Requisito 1.2 y 1.4: devuelve el JWT. El token queda guardado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"token_admin\", pm.response.json().data.accessToken);",
+                  "pm.test(\"El usuario es ADMIN\", function () {",
+                  "    pm.expect(pm.response.json().data.user.role).to.eql(\"ADMIN\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login TECHNICIAN Juan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan.perez@fleetcore.com\",\n  \"password\": \"Tecnico123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"token_juan\", pm.response.json().data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login TECHNICIAN Laura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"laura.gomez@fleetcore.com\",\n  \"password\": \"Tecnico123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set(\"token_laura\", pm.response.json().data.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "La contrasena nunca sale en la respuesta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_juan}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Requisito 1.3: la contrasena se guarda con hash y no se devuelve."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"No viene el campo password\", function () {",
+                  "    pm.expect(pm.response.text()).to.not.include(\"password\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Accesos denegados (requisito 1.10)",
+      "item": [
+        {
+          "name": "a. Sin token -> 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "b. Token invalido -> 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_inventado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "c. Rol sin permisos -> 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_juan}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "description": "Un TECHNICIAN no puede ver la lista completa: esa ruta es solo del ADMIN."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "d. API Key incorrecta -> 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "clave-que-no-existe"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/integrations/vehicles/ABC123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "integrations",
+                "vehicles",
+                "ABC123"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Vehiculos, mecanicos y talleres (requisitos 2, 3 y 4)",
+      "item": [
+        {
+          "name": "Listar vehiculos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const v = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"vehiculo_def\", v.find(x => x.plate === \"DEF456\").id);",
+                  "pm.collectionVariables.set(\"vehiculo_abc\", v.find(x => x.plate === \"ABC123\").id);",
+                  "pm.collectionVariables.set(\"vehiculo_ghi\", v.find(x => x.plate === \"GHI789\").id);",
+                  "pm.collectionVariables.set(\"vehiculo_jkl\", v.find(x => x.plate === \"JKL012\").id);",
+                  "pm.test(\"Los 4 vehiculos del seeder\", function () {",
+                  "    pm.expect(v.length).to.be.at.least(4);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar por placa (requisito 2.5)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles/plate/abc123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                "plate",
+                "abc123"
+              ]
+            },
+            "description": "Acepta la placa en minusculas porque se normaliza al guardarla."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Placa repetida -> 409 (requisito 2.4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"ABC123\",\n  \"brand\": \"Chevrolet\",\n  \"model\": \"NPR\",\n  \"year\": 2020\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar mecanicos (requisito 3.3)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mechanics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mechanics"
+              ]
+            },
+            "description": "Salen TODOS, activos e inactivos. Carlos Ruiz viene con user en null: es el mecanico sin cuenta de usuario."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const m = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"mecanico_laura\", m.find(x => x.name === \"Laura Gomez\").id);",
+                  "pm.collectionVariables.set(\"mecanico_inactivo\", m.find(x => x.status === \"INACTIVE\").id);",
+                  "pm.test(\"Hay un mecanico sin usuario\", function () {",
+                  "    pm.expect(m.some(x => x.user === null)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar talleres (requisito 4.3)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/workshops",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "workshops"
+              ]
+            },
+            "description": "Solo los activos: el seeder crea dos y uno esta inactivo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const w = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"taller_activo\", w[0].id);",
+                  "pm.test(\"Solo sale el taller activo\", function () {",
+                  "    pm.expect(w.every(x => x.status === \"ACTIVE\")).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Reglas de negocio al crear (requisito 6)",
+      "item": [
+        {
+          "name": "Vehiculo INACTIVE -> 400 (requisito 2.9)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Prueba con vehiculo inactivo\",\n  \"mileage\": 150000,\n  \"scheduledStart\": \"2026-12-20T07:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-20T09:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_jkl}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mecanico inactivo -> 400 (requisito 3.7)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Prueba con mecanico inactivo\",\n  \"mileage\": 45200,\n  \"scheduledStart\": \"2026-12-20T07:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-20T09:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_abc}}\",\n  \"mechanicId\": \"{{mecanico_inactivo}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vehiculo con otro activo -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "description": "GHI789 ya tiene un mantenimiento IN_PROGRESS del seeder. Un vehiculo solo puede tener uno activo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Prueba de vehiculo ocupado\",\n  \"mileage\": 78000,\n  \"scheduledStart\": \"2026-12-20T07:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-20T09:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_ghi}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Lo dice con la placa\", function () {",
+                  "    pm.expect(pm.response.json().message).to.include(\"GHI789\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Kilometraje inferior al del vehiculo -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Prueba de kilometraje bajo\",\n  \"mileage\": 100,\n  \"scheduledStart\": \"2026-12-20T07:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-20T09:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_abc}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fecha de fin anterior al inicio -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Prueba de fechas al reves\",\n  \"mileage\": 45200,\n  \"scheduledStart\": \"2026-12-20T10:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-20T08:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_abc}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cruce de horarios del mecanico (requisito 3.10)",
+      "item": [
+        {
+          "name": "Crear uno de 7:30 a 9:00",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "description": "Punto de partida para probar los ejemplos c y d del enunciado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"PREVENTIVE\",\n  \"description\": \"Revision de frenos de ABC123\",\n  \"mileage\": 45200,\n  \"scheduledStart\": \"2026-12-15T07:30:00.000Z\",\n  \"scheduledEnd\": \"2026-12-15T09:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_abc}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set(\"mantenimiento_nuevo\", pm.response.json().data.id);",
+                  "pm.test(\"Nace como SCHEDULED (requisito 5.5)\", function () {",
+                  "    pm.expect(pm.response.json().data.status).to.eql(\"SCHEDULED\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ejemplo c: otro a las 8:00 -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "description": "El enunciado: si tiene uno de 7:30 a 9:00, no se le puede asignar otro a las 8:00. Uso otro vehiculo distinto a proposito, para que lo unico que falle sea el horario del mecanico y no otra regla.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Ejemplo c del enunciado\",\n  \"mileage\": 23000,\n  \"scheduledStart\": \"2026-12-15T08:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-15T10:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_def}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ejemplo d: otro a las 9:00 -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            },
+            "description": "El enunciado: SI podra tener uno de 7:30 a 9:00 y otro que inicie a las 9:00. Este debe pasar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CORRECTIVE\",\n  \"description\": \"Ejemplo d del enunciado\",\n  \"mileage\": 23000,\n  \"scheduledStart\": \"2026-12-15T09:00:00.000Z\",\n  \"scheduledEnd\": \"2026-12-15T11:00:00.000Z\",\n  \"vehicleId\": \"{{vehiculo_def}}\",\n  \"mechanicId\": \"{{mecanico_laura}}\",\n  \"workshopId\": \"{{taller_activo}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Estados, transaccion y cierre (requisitos 5.7, 5.9 y 6)",
+      "item": [
+        {
+          "name": "Antes: el vehiculo esta AVAILABLE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles/{{vehiculo_abc}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehiculo_abc}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"AVAILABLE\", function () {",
+                  "    pm.expect(pm.response.json().data.status).to.eql(\"AVAILABLE\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Laura inicia SU mantenimiento",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_laura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "status"
+              ]
+            },
+            "description": "El TECHNICIAN puede actualizar el estado de lo que tiene asignado (criterio 1.2.b).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Despues: el vehiculo quedo IN_MAINTENANCE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles/{{vehiculo_abc}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehiculo_abc}}"
+              ]
+            },
+            "description": "Es la prueba de la transaccion: el mantenimiento y el vehiculo cambiaron juntos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"IN_MAINTENANCE\", function () {",
+                  "    pm.expect(pm.response.json().data.status).to.eql(\"IN_MAINTENANCE\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Juan intenta tocar el de Laura -> 403",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_juan}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "status"
+              ]
+            },
+            "description": "El rol es correcto, pero el trabajo no es suyo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar sin los datos obligatorios -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_laura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "complete"
+              ]
+            },
+            "description": "Requisito 6: no se puede completar sin la informacion de cierre.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workDone\": \"Frenos revisados\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar con kilometraje menor -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_laura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workDone\": \"Frenos revisados\",\n  \"finalCost\": 200000,\n  \"finishedAt\": \"2026-12-15T09:00:00.000Z\",\n  \"finalMileage\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cierre correcto",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_laura}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workDone\": \"Se cambiaron las pastillas delanteras\",\n  \"finalCost\": 480000,\n  \"finishedAt\": \"2026-12-15T09:00:00.000Z\",\n  \"finalMileage\": 45800\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Queda COMPLETED\", function () {",
+                  "    pm.expect(pm.response.json().data.status).to.eql(\"COMPLETED\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "El vehiculo vuelve a AVAILABLE con el km final",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles/{{vehiculo_abc}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                "{{vehiculo_abc}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const v = pm.response.json().data;",
+                  "pm.test(\"AVAILABLE y 45800 km\", function () {",
+                  "    pm.expect(v.status).to.eql(\"AVAILABLE\");",
+                  "    pm.expect(v.mileage).to.eql(45800);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Un COMPLETED no vuelve atras -> 409",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Consultas (requisito 5.8)",
+      "item": [
+        {
+          "name": "a. Todos los mantenimientos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "b. Solo los activos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/active",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "active"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Todos SCHEDULED o IN_PROGRESS\", function () {",
+                  "    const ok = [\"SCHEDULED\", \"IN_PROGRESS\"];",
+                  "    pm.expect(pm.response.json().data.every(m => ok.includes(m.status))).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "c. Los de un vehiculo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/vehicle/{{vehiculo_abc}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "vehicle",
+                "{{vehiculo_abc}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "d. Los de un mecanico",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/mechanic/{{mecanico_laura}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "mechanic",
+                "{{mecanico_laura}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "e. Historial del vehiculo (solo COMPLETED)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/vehicle/{{vehiculo_abc}}/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "vehicle",
+                "{{vehiculo_abc}}",
+                "history"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Solo completados\", function () {",
+                  "    pm.expect(pm.response.json().data.every(m => m.status === \"COMPLETED\")).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "El tecnico consulta los suyos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_juan}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/mine",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "mine"
+              ]
+            },
+            "description": "Criterio 1.2.b: ve sus mantenimientos y el taller donde debe hacerlos, sin saber su id de mecanico."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Juan abre un mantenimiento ajeno -> 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_juan}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/maintenances/{{mantenimiento_nuevo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "maintenances",
+                "{{mantenimiento_nuevo}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Integracion externa con x-api-key (requisito 1.8)",
+      "item": [
+        {
+          "name": "Ficha del vehiculo con API Key valida",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/integrations/vehicles/ABC123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "integrations",
+                "vehicles",
+                "ABC123"
+              ]
+            },
+            "description": "No lleva token JWT: se entra con la cabecera x-api-key."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Trae vehiculo e historial\", function () {",
+                  "    pm.expect(d.vehicle.plate).to.eql(\"ABC123\");",
+                  "    pm.expect(d.maintenances).to.be.an(\"array\");",
+                  "});",
+                  "pm.test(\"available es booleano\", function () {",
+                  "    pm.expect(d.vehicle.available).to.be.a(\"boolean\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sin la cabecera -> 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/integrations/vehicles/ABC123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "integrations",
+                "vehicles",
+                "ABC123"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Con token JWT pero sin API Key -> 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/integrations/vehicles/ABC123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "integrations",
+                "vehicles",
+                "ABC123"
+              ]
+            },
+            "description": "Son dos puertas distintas: el token no sirve aqui."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "La API Key no abre las rutas normales -> 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Placa que no existe -> 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/integrations/vehicles/NOEXISTE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "integrations",
+                "vehicles",
+                "NOEXISTE"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
