@@ -10,7 +10,9 @@ import { VehicleStatus } from '../../common/enums/vehicle-status.enum.js';
 import { MechanicsService } from '../mechanics/mechanics.service.js';
 import { VehiclesService } from '../vehicles/vehicles.service.js';
 import { WorkshopsService } from '../workshops/workshops.service.js';
-import type { CreateMaintenanceDto } from './dto/maintenance.dto.js';
+import type {
+    CompleteMaintenanceDto, CreateMaintenanceDto,
+} from './dto/maintenance.dto.js';
 import { Maintenance } from './entities/maintenance.entity.js';
 
 @Injectable()
@@ -102,6 +104,50 @@ export class MaintenancesService {
                 maintenance.vehicle.status = VehicleStatus.AVAILABLE;
                 await manager.save(maintenance.vehicle);
             }
+
+            return manager.save(maintenance);
+        });
+    }
+
+    /**
+     * Cierra un mantenimiento (requisitos 5.9 y 6).
+     *
+     * Los cuatro datos de cierre son obligatorios y los exige el DTO, asi que
+     * aqui solo queda comprobar el kilometraje y mover el vehiculo. Igual que
+     * el cambio de estado, va en una transaccion: el mantenimiento se cierra y
+     * el vehiculo se libera a la vez.
+     */
+    async complete(id: string, dto: CompleteMaintenanceDto) {
+        const maintenance = await this.findOne(id);
+        this.validarTransicion(maintenance.status, MaintenanceStatus.COMPLETED);
+
+        const vehicle = maintenance.vehicle;
+
+        // El odometro no puede retroceder: ni respecto a lo que se anoto al
+        // programar el mantenimiento, ni respecto a lo que lleva el vehiculo.
+        if (dto.finalMileage < maintenance.mileage) {
+            throw new BadRequestException(
+                `El kilometraje final ${dto.finalMileage} es inferior al registrado al programar (${maintenance.mileage})`,
+            );
+        }
+        if (dto.finalMileage < vehicle.mileage) {
+            throw new BadRequestException(
+                `El kilometraje final ${dto.finalMileage} es inferior al actual del vehiculo (${vehicle.mileage})`,
+            );
+        }
+
+        return this.dataSource.transaction(async (manager) => {
+            maintenance.status = MaintenanceStatus.COMPLETED;
+            maintenance.workDone = dto.workDone;
+            maintenance.finalCost = dto.finalCost;
+            maintenance.finishedAt = new Date(dto.finishedAt);
+            maintenance.finalMileage = dto.finalMileage;
+
+            // El vehiculo sale del taller y se queda con el kilometraje
+            // que marco al terminar el trabajo.
+            vehicle.status = VehicleStatus.AVAILABLE;
+            vehicle.mileage = dto.finalMileage;
+            await manager.save(vehicle);
 
             return manager.save(maintenance);
         });

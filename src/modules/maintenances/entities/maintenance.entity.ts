@@ -40,8 +40,9 @@ export class Maintenance extends AppBaseEntity {
     @Column({ name: 'work_done', type: 'text', nullable: true })
     workDone: string | null;
 
-    @Column({ name: 'final_cost', type: 'numeric', precision: 12, scale: 2, nullable: true })
-    finalCost: string | null;
+    // En pesos enteros, como el ejemplo del enunciado ("cost": 350000).
+    @Column({ name: 'final_cost', type: 'int', nullable: true })
+    finalCost: number | null;
 
     @Column({ name: 'finished_at', type: 'timestamptz', nullable: true })
     finishedAt: Date | null;

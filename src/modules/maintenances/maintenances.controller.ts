@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorators/auth.decorator.js';
 import { Role } from '../../common/enums/role.enum.js';
 import {
-    ChangeMaintenanceStatusDto, CreateMaintenanceDto,
+    ChangeMaintenanceStatusDto, CompleteMaintenanceDto, CreateMaintenanceDto,
 } from './dto/maintenance.dto.js';
 import { MaintenancesService } from './maintenances.service.js';
 
@@ -27,5 +27,15 @@ export class MaintenancesController {
         @Body() dto: ChangeMaintenanceStatusDto,
     ) {
         return this.maintenancesService.changeStatus(id, dto.status);
+    }
+
+    @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Cerrar un mantenimiento con sus datos finales (solo ADMIN)' })
+    @Patch(':id/complete')
+    complete(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: CompleteMaintenanceDto,
+    ) {
+        return this.maintenancesService.complete(id, dto);
     }
 }

@@ -55,3 +55,32 @@ export class ChangeMaintenanceStatusDto {
     })
     status: MaintenanceStatus;
 }
+
+/**
+ * Datos obligatorios para cerrar un mantenimiento (requisito 5.9).
+ *
+ * Los cuatro son obligatorios a proposito: el requisito 6 dice que "no se
+ * podra completar un mantenimiento si no contiene la informacion obligatoria
+ * de cierre", y al declararlos asi el ValidationPipe ya responde 400 sin que
+ * el servicio tenga que comprobar nada.
+ */
+export class CompleteMaintenanceDto {
+    @ApiProperty({ example: 'Se cambio el aceite y los dos filtros' })
+    @IsString({ message: 'Debes registrar el trabajo realizado' })
+    @IsNotEmpty({ message: 'Debes registrar el trabajo realizado' })
+    workDone: string;
+
+    @ApiProperty({ example: 350000, description: 'Costo final en pesos' })
+    @IsInt({ message: 'Debes registrar el costo final, en pesos enteros' })
+    @Min(0, { message: 'El costo final no puede ser negativo' })
+    finalCost: number;
+
+    @ApiProperty({ example: '2026-11-05T09:00:00.000Z' })
+    @IsDateString({}, { message: 'Debes registrar una fecha de finalizacion valida' })
+    finishedAt: string;
+
+    @ApiProperty({ example: 45200, description: 'Kilometraje del vehiculo al terminar' })
+    @IsInt({ message: 'Debes registrar el kilometraje final' })
+    @Min(0, { message: 'El kilometraje final no puede ser negativo' })
+    finalMileage: number;
+}
