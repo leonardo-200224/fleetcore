@@ -4,6 +4,20 @@ import {
 import type { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 
+/**
+ * Atrapa cualquier error y lo devuelve con el formato del requisito 7.2:
+ * codigo HTTP, mensaje, ruta y fecha.
+ *
+ * @Catch() sin argumentos significa "todos los errores", no solo los de Nest.
+ * Eso importa por el requisito 7.4: los errores de validacion, de permisos y
+ * los conflictos de la base de datos NO pueden salir como 500. Por eso los
+ * errores de PostgreSQL se traducen aqui:
+ *   23505 (clave unica repetida)   -> 409 Conflict
+ *   23503 (clave foranea invalida) -> 400 Bad Request
+ *
+ * Solo se escribe en el log lo que de verdad quedo como 500, que es lo unico
+ * que indica un fallo del servidor y no del cliente.
+ */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
     private readonly logger = new Logger(AllExceptionsFilter.name);

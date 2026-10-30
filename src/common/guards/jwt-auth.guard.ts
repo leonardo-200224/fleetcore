@@ -6,6 +6,17 @@ import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 import type { AuthRequest, JwtPayload } from '../interfaces/jwt-payload.interface.js';
 
+/**
+ * Protege todas las rutas (requisito 1.5). Esta puesto como guard GLOBAL en
+ * app.module.ts, asi que por defecto nada es publico: hay que marcar con
+ * @Public() lo que si lo sea, como el registro y el login.
+ *
+ * Lee la cabecera Authorization, verifica el token y deja el contenido del
+ * JWT en req.user, de donde lo sacan despues @CurrentUser() y el RolesGuard.
+ *
+ * Responde 401 tanto si no hay token como si es invalido o expiro, que son
+ * los tres primeros casos del requisito 1.10.
+ */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
     constructor(
