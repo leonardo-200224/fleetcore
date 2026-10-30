@@ -1,132 +1,320 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# FleetCore API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para gestionar el mantenimiento de la flota de vehiculos de la empresa
+de transporte FleetCore. Prueba de desempeno del modulo 6.2 de NestJS.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Coder:** Leonardo Ayala
+**Clan:** PENDIENTE_CLAN
 
-## Description
+Hecha con NestJS, TypeScript, TypeORM, PostgreSQL y JWT.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Documentacion Swagger
 
-```bash
-$ npm install
+Con el proyecto corriendo, la documentacion queda en:
+
+```
+http://localhost:3000/docs
 ```
 
-## Compile and run the project
+Ahi se pueden probar todos los endpoints. Para los protegidos hay que pegar el
+token en el boton **Authorize** (opcion *bearer*), y para el de integraciones
+se usa el otro campo, el de la cabecera `x-api-key`.
+
+---
+
+## Como levantarlo
+
+### 1. Lo que hace falta
+
+- Node 20 o superior
+- Docker y Docker Compose (para la base de datos)
+
+### 2. Instalar las dependencias
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Crear el archivo .env
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Hay que cambiar al menos `DB_PASSWORD` y `JWT_SECRET` (el secreto necesita 32
+caracteres o mas, si no la aplicacion no arranca).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 4. Levantar PostgreSQL
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up -d db
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Esto crea el contenedor `fleetcore_db` con la base `fleetcore_db` en el puerto
+**5438**. Use el 5438 y no el 5432 porque en el equipo donde trabajo ya hay
+otros PostgreSQL ocupando los puertos de siempre; si en otra maquina el 5438
+esta libre igual funciona, y si no, se cambia `DB_PORT` en el `.env`.
 
-## Observability
+Las tablas no hay que crearlas a mano: con `DB_SYNC=true` TypeORM las crea
+solo al arrancar.
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+### 5. Poblar la base de datos
 
 ```bash
-$ npx @nestjs/observe link
+npm run seed
 ```
 
-It installs `@nestjs/observe`, wires it into `AppModule` and `main.ts`, and writes the app key and secret into `.env`, which every `nest start` script (`start`, `start:dev`, `start:debug`) then loads. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
+Se puede ejecutar las veces que haga falta: busca cada registro antes de
+crearlo, asi que no duplica nada.
 
-Or do it by hand:
+### 6. Arrancar la API
 
 ```bash
-$ npm install @nestjs/observe
+npm run start:dev
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/sdk) - it takes a single import and an app key.
+---
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+## Credenciales de prueba
 
-## Resources
+Las crea el seeder:
 
-Check out a few resources that may come in handy when working with NestJS:
+| Rol | Correo | Contrasena |
+|---|---|---|
+| ADMIN | admin@fleetcore.com | la que pongas en `ADMIN_PASSWORD` del `.env` |
+| TECHNICIAN | juan.perez@fleetcore.com | `Tecnico123` |
+| TECHNICIAN | laura.gomez@fleetcore.com | `Tecnico123` |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Y las API Keys de ejemplo estan en `API_KEYS` del `.env`:
+`demo-key-partner-1` y `demo-key-partner-2`.
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Que deja el seeder
 
-## Stay in touch
+- 1 usuario ADMIN y 2 TECHNICIAN
+- 3 mecanicos: Juan y Laura activos y vinculados a los dos tecnicos, y Carlos
+  Ruiz inactivo y sin cuenta de usuario
+- 2 talleres: Taller Norte activo y Taller Centro inactivo
+- 4 vehiculos: ABC123 y DEF456 disponibles, GHI789 en mantenimiento y JKL012
+  inactivo
+- 2 mantenimientos: uno COMPLETED sobre ABC123 (el historial) y uno
+  IN_PROGRESS sobre GHI789
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## Endpoints
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Todas las rutas van bajo `/api`.
+
+### Autenticacion
+
+| Metodo | Ruta | Quien | Que hace |
+|---|---|---|---|
+| POST | `/auth/register` | publico | Registra un usuario (`role` opcional: ADMIN o TECHNICIAN) |
+| POST | `/auth/login` | publico | Devuelve el token JWT |
+| GET | `/users/me` | autenticado | Mis datos |
+| GET | `/users` | ADMIN | Lista de usuarios |
+
+### Vehiculos
+
+| Metodo | Ruta | Quien |
+|---|---|---|
+| POST | `/vehicles` | ADMIN |
+| GET | `/vehicles` | autenticado |
+| GET | `/vehicles/plate/:plate` | autenticado |
+| GET | `/vehicles/:id` | autenticado |
+| PATCH | `/vehicles/:id` | ADMIN |
+| PATCH | `/vehicles/:id/status` | ADMIN |
+| DELETE | `/vehicles/:id` | ADMIN (borrado logico) |
+
+### Mecanicos
+
+| Metodo | Ruta | Quien |
+|---|---|---|
+| POST | `/mechanics` | ADMIN |
+| GET | `/mechanics` | autenticado |
+| GET | `/mechanics/:id` | autenticado |
+| PATCH | `/mechanics/:id` | ADMIN |
+| PATCH | `/mechanics/:id/status` | ADMIN |
+
+### Talleres
+
+| Metodo | Ruta | Quien |
+|---|---|---|
+| POST | `/workshops` | ADMIN |
+| GET | `/workshops` | autenticado (solo los activos) |
+| GET | `/workshops/:id` | autenticado |
+| PATCH | `/workshops/:id/status` | ADMIN |
+
+### Mantenimientos
+
+| Metodo | Ruta | Quien |
+|---|---|---|
+| POST | `/maintenances` | ADMIN |
+| GET | `/maintenances` | ADMIN |
+| GET | `/maintenances/active` | ADMIN |
+| GET | `/maintenances/mine` | TECHNICIAN |
+| GET | `/maintenances/vehicle/:id` | ADMIN |
+| GET | `/maintenances/vehicle/:id/history` | ADMIN (solo COMPLETED) |
+| GET | `/maintenances/mechanic/:id` | ADMIN |
+| GET | `/maintenances/:id` | ADMIN, o el TECHNICIAN asignado |
+| PATCH | `/maintenances/:id/status` | ADMIN, o el TECHNICIAN asignado |
+| PATCH | `/maintenances/:id/complete` | ADMIN, o el TECHNICIAN asignado |
+
+### Integracion externa
+
+| Metodo | Ruta | Como se entra |
+|---|---|---|
+| GET | `/integrations/vehicles/:plate` | cabecera `x-api-key` |
+
+---
+
+## Decisiones que tome
+
+El enunciado tiene algunos puntos que se contradicen o que no cubren todos los
+casos. Dejo aqui lo que decidi y por que, para que se entienda al leer el
+codigo.
+
+### El mecanico no es lo mismo que el usuario TECHNICIAN
+
+Son dos tablas distintas y la relacion entre ellas es **opcional**. Lo hice asi
+porque el seeder del requisito 9 pide tres mecanicos de los cuales solo dos
+estan vinculados a tecnicos: el tercero existe en la flota pero no tiene cuenta
+para entrar. Si los hubiera metido en una sola tabla, ese seeder no se podria
+cumplir.
+
+### El mecanico se valida por cruce de horarios; el vehiculo no
+
+El requisito 6 dice que un tecnico no puede tener "simultaneamente" mas de un
+mantenimiento activo, pero el requisito 3.10 dice que no puede tener dos
+**cuyos horarios se crucen**, y pone ejemplos: si tiene uno de 7:30 a 9:00, no
+se le puede asignar otro a las 8:00, pero **si** uno que empiece a las 9:00.
+
+Entendi "simultaneamente" como "solapado en el tiempo" e implemente la regla de
+cruces, porque es la unica que cumple los cuatro ejemplos. La formula es:
+
+```
+existente.inicio < nuevo.fin   Y   existente.fin > nuevo.inicio
+```
+
+Para el **vehiculo** es distinto: ahi si es un solo mantenimiento activo, sin
+mirar horarios, porque el ejemplo de error del enunciado lo dice tal cual
+("El vehiculo ABC123 ya tiene un mantenimiento activo").
+
+### Guardo hora de inicio y hora de fin
+
+El requisito 5.3 solo pide "fecha programada", pero sin saber cuando termina un
+mantenimiento no hay forma de detectar que se cruza con otro. Como el enunciado
+pide esos campos "como minimo", anadi `scheduledStart` y `scheduledEnd`.
+
+### Que pasa al cancelar un mantenimiento ya empezado
+
+El enunciado no lo dice. Decidi que el vehiculo vuelva a `AVAILABLE`, porque si
+no quedaria `IN_MAINTENANCE` para siempre y nunca mas podria entrar a otro
+mantenimiento. Las transiciones que permito son:
+
+```
+SCHEDULED   -> IN_PROGRESS | CANCELLED
+IN_PROGRESS -> COMPLETED   | CANCELLED
+COMPLETED   -> ninguna
+CANCELLED   -> ninguna
+```
+
+Cualquier otra responde 409 diciendo que se intento.
+
+### El vehiculo se queda con el kilometraje final
+
+Al cerrar un mantenimiento, el kilometraje final pasa al vehiculo. Si no lo
+hiciera, el odometro del vehiculo nunca avanzaria y la validacion de que "el
+kilometraje no puede ser inferior al actual" dejaria de servir.
+
+### Los enums van en ingles
+
+Los requisitos los nombran en ingles (`PREVENTIVE`, `SCHEDULED`, `AVAILABLE`),
+aunque el JSON de ejemplo muestre algunos en espanol. Use los del requisito,
+que son los normativos. Los mensajes de error si van en espanol.
+
+### "available" en el endpoint de integracion
+
+El ejemplo del enunciado muestra `"available": true`, un booleano, pero el
+requisito 2.8 pide tres estados. Por dentro el vehiculo tiene el enum completo
+y solo en esa respuesta lo traduzco a `available`; el enum tambien viaja en
+`status`, asi no se pierde informacion.
+
+### JWT_EXPIRES_IN en segundos
+
+El `.env.example` del enunciado trae `JWT_EXPIRES_IN=1h`, pero la validacion de
+entorno del proyecto espera un numero. Lo deje en `3600`, que es lo mismo.
+
+### El estado IN_MAINTENANCE no se pone a mano
+
+`PATCH /vehicles/:id/status` solo acepta `AVAILABLE` o `INACTIVE`. El estado
+`IN_MAINTENANCE` lo pone el sistema cuando arranca un mantenimiento, porque si
+no el vehiculo podria quedar "en el taller" sin ningun mantenimiento detras.
+
+### El tecnico solo toca lo suyo
+
+Un TECHNICIAN puede consultar, iniciar, cancelar y cerrar sus mantenimientos,
+pero recibe 403 si intenta tocar uno de otro mecanico. Esa comprobacion esta en
+el servicio y no en un guard, porque el rol es correcto: lo que falla es que el
+trabajo no es suyo, y para saberlo hay que mirar los datos.
+
+---
+
+## Formato de las respuestas
+
+Todas las respuestas correctas salen con la misma forma, gracias al interceptor:
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "data": { },
+  "timestamp": "2026-10-20T19:00:00.000Z"
+}
+```
+
+Y los errores pasan por el filtro de excepciones:
+
+```json
+{
+  "success": false,
+  "statusCode": 409,
+  "message": "El vehiculo ABC123 ya tiene un mantenimiento activo",
+  "path": "/api/maintenances",
+  "timestamp": "2026-10-20T19:00:00.000Z"
+}
+```
+
+---
+
+## Estructura del proyecto
+
+```
+src/
+  common/        guards, decoradores, interceptor, filtro, enums, entidad base
+  config/        validacion de las variables de entorno con zod
+  database/      seed.ts
+  modules/
+    auth/        registro, login y JWT
+    users/
+    vehicles/
+    mechanics/
+    workshops/
+    maintenances/  aqui vive la logica de estados y las reglas de negocio
+    integrations/  el endpoint con x-api-key
+```
+
+---
+
+## Base de datos
+
+El archivo `database/fleetcore_dump.sql` tiene la estructura y los datos del
+seeder, por si se quiere restaurar sin levantar Docker:
+
+```bash
+psql -h localhost -p 5438 -U postgres -d fleetcore_db -f database/fleetcore_dump.sql
+```
