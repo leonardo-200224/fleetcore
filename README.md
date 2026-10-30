@@ -312,7 +312,14 @@ src/
 
 ## Evidencias de las pruebas
 
-En la carpeta `postman/` esta la coleccion con los escenarios principales:
+Hay de dos tipos:
+
+- `evidencias/` — capturas de Swagger de los escenarios principales, con un
+  indice explicando que muestra cada una.
+- `postman/` — la coleccion con las mismas pruebas, por si se quieren
+  ejecutar en vez de mirarlas.
+
+En la carpeta `postman/` esta la coleccion:
 
 ```
 postman/FleetCore.postman_collection.json   43 peticiones en 8 carpetas
